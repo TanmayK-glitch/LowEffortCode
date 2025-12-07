@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Digi Flow | Digital Innovation</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Inter", "sans-serif"],
+            },
+            colors: {
+              // Custom palette to match the dark/halftone vibe
+              gray: {
+                850: "#1f1f1f",
+                900: "#101010",
+                950: "#050505",
+              },
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden; /* Prevent scrolling */
+        background-color: #050505;
+        color: white;
+      }
+
+      #bg-canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        display: block;
+      }
+
+      .hero-content {
+        position: relative;
+        z-index: 10;
+        pointer-events: none; /* Let clicks pass through to canvas if needed, mostly for cursor feel */
+      }
+
+      /* Enable pointer events on interactive elements */
+      .hero-content a,
+      .hero-content button,
+      header {
+        pointer-events: auto;
+      }
+    </style>
+  </head>
+  <body class="antialiased selection:bg-white selection:text-black">
+    <!-- Interactive Halftone Background -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Navigation -->
+    <header
+      class="fixed top-0 left-0 w-full flex justify-between items-center p-6 md:p-8 z-50 opacity-0"
+      id="navbar"
+    >
+      <!-- Logo -->
+      <a href="#" class="group flex items-center gap-3">
+        <!-- Custom Geometric Logo Mark -->
+        <div
+          class="relative w-6 h-6 flex items-center justify-center transform group-hover:scale-110 transition-transform duration-500 ease-out"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-full h-full text-white"
+          >
+            <rect
+              x="2"
+              y="12"
+              width="6"
+              height="6"
+              fill="currentColor"
+              fill-opacity="0.9"
+            />
+            <rect
+              x="9"
+              y="8"
+              width="6"
+              height="6"
+              fill="currentColor"
+              fill-opacity="0.7"
+            />
+            <rect
+              x="16"
+              y="4"
+              width="6"
+              height="6"
+              fill="currentColor"
+              fill-opacity="0.5"
+            />
+          </svg>
+        </div>
+        <span
+          class="text-sm font-medium tracking-widest text-white group-hover:opacity-80 transition-opacity"
+          >DIGI FLOW</span
+        >
+      </a>
+
+      <!-- Nav Links -->
+      <nav class="hidden md:flex items-center gap-8">
+        <a
+          href="#"
+          class="text-sm font-medium text-zinc-400 hover:text-white transition-colors duration-300"
+          >About</a
+        >
+        <a
+          href="#"
+          class="text-sm font-medium text-zinc-400 hover:text-white transition-colors duration-300"
+          >Projects</a
+        >
+        <a
+          href="#"
+          class="text-sm font-medium text-zinc-400 hover:text-white transition-colors duration-300"
+          >Contact</a
+        >
+      </nav>
+
+      <!-- Mobile Menu Icon (Placeholder) -->
+      <button class="md:hidden text-white">
+        <i data-lucide="menu" stroke-width="1.5" class="w-6 h-6"></i>
+      </button>
+    </header>
+
+    <!-- Main Hero Content -->
+    <main
+      class="relative z-10 w-full h-screen flex flex-col justify-center items-center px-4 md:px-0"
+    >
+      <div
+        class="hero-content flex flex-col items-center text-center max-w-5xl mx-auto"
+      >
+        <!-- Heading -->
+        <h1
+          id="hero-heading"
+          class="text-4xl md:text-6xl lg:text-8xl font-medium tracking-tighter text-white uppercase mb-6 md:mb-8 opacity-0 leading-none"
+        >
+          Digital Innovation
+        </h1>
+
+        <!-- Subheading -->
+        <p
+          id="hero-sub"
+          class="text-base md:text-lg lg:text-xl text-zinc-400 font-normal tracking-wide leading-relaxed max-w-xs md:max-w-2xl opacity-0"
+        >
+          Where thoughts take shape and consciousness flows like liquid mercury
+          through infinite dimensions.
+        </p>
+      </div>
+    </main>
+
+    <script>
+      // Initialize Icons
+      lucide.createIcons();
+
+      // Canvas / Halftone Effect Logic
+      const canvas = document.getElementById("bg-canvas");
+      const ctx = canvas.getContext("2d");
+
+      let width, height;
+      let mouseX = -1000;
+      let mouseY = -1000;
+
+      // Configuration for the dot grid
+      const DOT_GAP = 30; // Spacing between dots
+      const DOT_RADIUS = 1.5; // Base radius
+      const HOVER_RADIUS = 150; // Radius of the spotlight effect
+      const DECAY = 0.94; // Trail decay speed
+
+      let dots = [];
+
+      function initDots() {
+        dots = [];
+        // Create a grid of dots covering the screen
+        for (let x = 0; x < width + DOT_GAP; x += DOT_GAP) {
+          for (let y = 0; y < height + DOT_GAP; y += DOT_GAP) {
+            dots.push({
+              x: x,
+              y: y,
+              intensity: 0,
+            });
+          }
+        }
+      }
+
+      // Handle Resize
+      function resize() {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+        initDots();
+      }
+      window.addEventListener("resize", resize);
+      resize();
+
+      // Handle Mouse Move
+      window.addEventListener("mousemove", (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+
+        // Parallax effect for text
+        gsap.to("#hero-heading", {
+          x: (mouseX - width / 2) * 0.02,
+          y: (mouseY - height / 2) * 0.02,
+          duration: 1,
+          ease: "power2.out",
+        });
+        gsap.to("#hero-sub", {
+          x: (mouseX - width / 2) * 0.015,
+          y: (mouseY - height / 2) * 0.015,
+          duration: 1,
+          ease: "power2.out",
+        });
+      });
+
+      // Handle Touch Move (for mobile)
+      window.addEventListener("touchmove", (e) => {
+        if (e.touches.length > 0) {
+          mouseX = e.touches[0].clientX;
+          mouseY = e.touches[0].clientY;
+        }
+      });
+
+      function draw() {
+        ctx.clearRect(0, 0, width, height);
+
+        for (let i = 0; i < dots.length; i++) {
+          const dot = dots[i];
+
+          // Calculate distance from mouse
+          const dx = dot.x - mouseX;
+          const dy = dot.y - mouseY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          // Interaction: Increase intensity if close to mouse
+          if (dist < HOVER_RADIUS) {
+            const newIntensity = 1 - dist / HOVER_RADIUS;
+            dot.intensity = Math.max(dot.intensity, newIntensity);
+          }
+
+          // Decay the intensity over time (creates the trail)
+          dot.intensity *= DECAY;
+
+          // Render
+          // Base alpha 0.15, max alpha 1
+          const alpha = 0.15 + 0.85 * dot.intensity;
+
+          ctx.beginPath();
+          ctx.arc(dot.x, dot.y, DOT_RADIUS, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+          ctx.fill();
+        }
+
+        requestAnimationFrame(draw);
+      }
+
+      // Start animation loop
+      draw();
+
+      // GSAP Entrance Animations
+      document.addEventListener("DOMContentLoaded", () => {
+        const tl = gsap.timeline();
+
+        // 1. Background Entrance (Canvas fade in handled via CSS opacity or just appear,
+        // but let's animate the container opacity for smoothness)
+        gsap.set(canvas, { opacity: 0, scale: 1.05 });
+
+        tl.to(canvas, {
+          opacity: 1,
+          scale: 1,
+          duration: 1.5,
+          ease: "power2.out",
+        })
+          // 2. Navbar & Logo
+          .to(
+            "#navbar",
+            {
+              y: 0,
+              opacity: 1,
+              duration: 0.8,
+              ease: "power3.out",
+            },
+            "-=1.0"
+          ) // Overlap with background
+          // 3. Main Heading
+          .to(
+            "#hero-heading",
+            {
+              y: 0, // Starts at translate-y set by CSS/browser default logic?
+              // Actually better to force set 'from' values in JS for reliability.
+              opacity: 1,
+              duration: 1.2,
+              ease: "power3.out",
+            },
+            "-=0.6"
+          )
+          // 4. Subheading
+          .to(
+            "#hero-sub",
+            {
+              y: 0,
+              opacity: 1,
+              duration: 1,
+              ease: "power3.out",
+            },
+            "-=0.9"
+          );
+      });
+
+      // Pre-set GSAP initial states (to ensure no flash of unstyled content)
+      gsap.set("#navbar", { y: -20, opacity: 0 });
+      gsap.set("#hero-heading", { y: 30, opacity: 0 });
+      gsap.set("#hero-sub", { y: 20, opacity: 0 });
+    </script>
+  </body>
+</html>
