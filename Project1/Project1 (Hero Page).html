@@ -1,0 +1,633 @@
+<html lang="en" style="--move-x: 11.136363636363637px; --move-y: 14.960264900662251px;">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Framework</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* 3D Environment */
+        .scene {
+            perspective: 1200px;
+            transform-style: preserve-3d;
+            height: 100vh;
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Moving Grid Background - Darker Lines */
+        .grid-layer {
+            position: absolute;
+            inset: -50%;
+            width: 200%;
+            height: 200%;
+            background-size: 80px 80px;
+            background-image:
+                linear-gradient(to right, rgba(0, 0, 0, 0.12) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 0, 0, 0.12) 1px, transparent 1px);
+            transform-style: preserve-3d;
+            transform:
+                rotateX(var(--tilt-y, 20deg)) rotateY(var(--tilt-x, 0deg)) scale(1.5);
+            transform-origin: center center;
+            /* Removed transition to prevent fighting with JS loop */
+            mask-image: radial-gradient(circle at center, black 30%, transparent 70%);
+            will-change: transform;
+        }
+
+        /* Hero Text 3D Movement */
+        .hero-3d-text {
+            /* Removed transition to prevent fighting with JS loop */
+            transform:
+                translateX(var(--move-x, 0px)) translateY(var(--move-y, 0px));
+            will-change: transform;
+        }
+
+        /* Lens/Cursor System */
+        #hero-text-container {
+            position: relative;
+            display: inline-block;
+            cursor: none;
+        }
+
+        /* The blurred/distorted text layer revealed by clip-path */
+        .lens-content-layer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 20;
+            opacity: 0;
+            clip-path: circle(var(--radius, 0px) at var(--cursor-x, 50%) var(--cursor-y, 50%));
+            will-change: clip-path;
+            transition: opacity 0.3s ease;
+        }
+
+        /* The text inside the lens - Magnified & Refracted Look */
+        .lens-content-layer h1 {
+            /* Stronger scale for refraction effect */
+            transform: scale(1.6);
+            transform-origin: var(--cursor-x, 50%) var(--cursor-y, 50%);
+            color: #000;
+            filter: blur(0.5px);
+        }
+
+        /* The Physical Glass Orb Overlay */
+        .glass-orb {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: var(--diameter, 240px);
+            height: var(--diameter, 240px);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 30;
+            opacity: 0;
+            /* Use transform for performance instead of left/top */
+            transform: translate3d(var(--cursor-x, 50%), var(--cursor-y, 50%), 0) translate(-50%, -50%);
+            will-change: transform, opacity;
+            transition: opacity 0.3s ease;
+            /* Enhanced Glass Styling to match screenshot */
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 40%, rgba(255, 255, 255, 0) 70%);
+            box-shadow:
+                /* Deep inner shadow for volume */
+                inset -15px -15px 30px rgba(0, 0, 0, 0.3),
+                /* Soft inner glow */
+                inset 10px 10px 30px rgba(255, 255, 255, 0.7),
+                /* Sharp specular highlight */
+                inset 20px 20px 10px rgba(255, 255, 255, 0.9),
+                /* Outer drop shadow */
+                0 25px 50px rgba(0, 0, 0, 0.4);
+            /* Crisp border */
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(3px);
+        }
+
+        /* Activation states */
+        #hero-text-container.active .lens-content-layer,
+        #hero-text-container.active .glass-orb {
+            opacity: 1;
+        }
+
+        /* Smooth marquee */
+        @keyframes marquee {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        .animate-marquee {
+            animation: marquee 10s linear infinite;
+        }
+    </style>
+    <!-- Fonts -->
+    <link id="all-fonts-link-font-space-grotesk" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap">
+    <style id="all-fonts-style-font-space-grotesk">
+        .font-space-grotesk {
+            font-family: 'Space Grotesk', sans-serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-geist" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&amp;display=swap">
+    <style id="all-fonts-style-font-geist">
+        .font-geist {
+            font-family: 'Geist', sans-serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-roboto" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;600;700&amp;display=swap">
+    <style id="all-fonts-style-font-roboto">
+        .font-roboto {
+            font-family: 'Roboto', sans-serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-montserrat" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&amp;display=swap">
+    <style id="all-fonts-style-font-montserrat">
+        .font-montserrat {
+            font-family: 'Montserrat', sans-serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-poppins" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&amp;display=swap">
+    <style id="all-fonts-style-font-poppins">
+        .font-poppins {
+            font-family: 'Poppins', sans-serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-playfair" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;900&amp;display=swap">
+    <style id="all-fonts-style-font-playfair">
+        .font-playfair {
+            font-family: 'Playfair Display', serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-instrument-serif" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Instrument+Serif:wght@400;500;600;700&amp;display=swap">
+    <style id="all-fonts-style-font-instrument-serif">
+        .font-instrument-serif {
+            font-family: 'Instrument Serif', serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-merriweather" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700;900&amp;display=swap">
+    <style id="all-fonts-style-font-merriweather">
+        .font-merriweather {
+            font-family: 'Merriweather', serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-bricolage" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@300;400;500;600;700&amp;display=swap">
+    <style id="all-fonts-style-font-bricolage">
+        .font-bricolage {
+            font-family: 'Bricolage Grotesque', sans-serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-jakarta" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap">
+    <style id="all-fonts-style-font-jakarta">
+        .font-jakarta {
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-manrope" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&amp;display=swap">
+    <style id="all-fonts-style-font-manrope">
+        .font-manrope {
+            font-family: 'Manrope', sans-serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-work-sans" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600;700;800&amp;display=swap">
+    <style id="all-fonts-style-font-work-sans">
+        .font-work-sans {
+            font-family: 'Work Sans', sans-serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-pt-serif" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=PT+Serif:wght@400;700&amp;display=swap">
+    <style id="all-fonts-style-font-pt-serif">
+        .font-pt-serif {
+            font-family: 'PT Serif', serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-geist-mono" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500;600;700&amp;display=swap">
+    <style id="all-fonts-style-font-geist-mono">
+        .font-geist-mono {
+            font-family: 'Geist Mono', monospace !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-space-mono" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;display=swap">
+    <style id="all-fonts-style-font-space-mono">
+        .font-space-mono {
+            font-family: 'Space Mono', monospace !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-quicksand" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&amp;display=swap">
+    <style id="all-fonts-style-font-quicksand">
+        .font-quicksand {
+            font-family: 'Quicksand', sans-serif !important;
+        }
+    </style>
+    <link id="all-fonts-link-font-nunito" rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700;800&amp;display=swap">
+    <style id="all-fonts-style-font-nunito">
+        .font-nunito {
+            font-family: 'Nunito', sans-serif !important;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-white text-zinc-900 min-h-screen overflow-hidden relative flex flex-col selection:bg-pink-300 selection:text-pink-900">
+
+    <!-- 3D Scene Background -->
+    <div class="scene absolute inset-0 z-0 pointer-events-none flex items-center justify-center">
+        <!-- Grid Layer -->
+        <div class="grid-layer" id="grid-layer"
+            style="--tilt-x: -5.939393926178226deg; --tilt-y: 27.978807923914033deg;"></div>
+
+        <!-- Enhanced Pink Glow: Darker & Spread Higher -->
+        <div
+            class="absolute bottom-0 w-full h-[85vh] bg-gradient-to-t from-pink-700/60 via-pink-600/30 to-transparent blur-[100px] opacity-100 pointer-events-none mix-blend-multiply">
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <header class="relative z-40 w-full max-w-7xl mx-auto px-6 py-8 flex justify-between items-start">
+        <!-- Brand / New Logo -->
+        <div class="flex flex-col gap-1">
+            <span class="text-[10px] font-mono text-zinc-400 pl-1 tracking-widest font-geist">01</span>
+            <div
+                class="group cursor-pointer flex items-center gap-3 bg-white/90 backdrop-blur-md border border-zinc-200/80 rounded-full px-2 py-2 pr-5 hover:border-zinc-300 transition-colors shadow-sm">
+                <div
+                    class="bg-zinc-900 border border-zinc-800 rounded-full w-9 h-9 flex items-center justify-center text-white shadow-inner">
+                    <!-- New Cool Abstract SVG Logo -->
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2"
+                            stroke-linejoin="round"></path>
+                        <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+                        </path>
+                        <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+                        </path>
+                    </svg>
+                </div>
+                <span class="text-sm font-semibold tracking-tight text-zinc-800 font-geist">Frame</span>
+            </div>
+        </div>
+
+        <!-- Contact -->
+        <div class="flex flex-col gap-1 items-end">
+            <span class="text-[10px] font-mono text-zinc-400 pr-2 tracking-widest font-geist">02</span>
+            <a href="#"
+                class="flex items-center gap-3 bg-white/80 backdrop-blur-md border border-zinc-200/80 rounded-full px-5 py-2.5 hover:border-zinc-300 transition-colors shadow-sm group">
+                <span
+                    class="text-sm font-medium tracking-tight text-zinc-600 group-hover:text-zinc-900 transition-colors font-geist">connect@framework.dev</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    data-lucide="arrow-up-right"
+                    class="lucide lucide-arrow-up-right w-4 h-4 text-zinc-400 group-hover:text-zinc-600 transition-colors">
+                    <path d="M7 7h10v10"></path>
+                    <path d="M7 17 17 7"></path>
+                </svg>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content Area - Left Aligned -->
+    <main class="relative z-10 flex-grow flex flex-col items-start justify-center pb-32 px-6 md:px-12 lg:px-24">
+
+        <div class="relative w-full max-w-7xl">
+            <!-- Floating Decorative Element -->
+            <div class="absolute -left-12 top-0 hidden xl:block opacity-40">
+                <div class="h-32 w-[1px] bg-gradient-to-b from-transparent via-zinc-400 to-transparent"></div>
+            </div>
+
+            <!-- Hero Text Container (Left Aligned) -->
+            <div id="hero-text-container" class="relative group inline-block text-left">
+
+                <!-- Normal Text (Base Layer) -->
+                <h1
+                    class="hero-3d-text font-semibold text-[13vw] md:text-[8rem] lg:text-[9.5rem] leading-[0.85] tracking-tighter text-zinc-900 flex flex-col items-start select-none">
+                    <span
+                        class="bg-clip-text text-transparent bg-gradient-to-b from-zinc-900 via-zinc-800 to-zinc-600 pb-2 font-space-grotesk font-semibold">The</span>
+                    <span
+                        class="bg-clip-text text-transparent bg-gradient-to-b from-zinc-900 via-zinc-800 to-zinc-600 font-space-grotesk font-semibold">Framework</span>
+                </h1>
+
+                <!-- Distorted/Magnified Text (Clipped Layer) -->
+                <div class="lens-content-layer hero-3d-text" aria-hidden="true"
+                    style="--cursor-x: 40.00000000000003px; --cursor-y: -191.69999694824207px; --radius: 0px;">
+                    <h1
+                        class="font-semibold text-[13vw] md:text-[8rem] lg:text-[9.5rem] leading-[0.85] tracking-tighter text-black flex flex-col items-start select-none">
+                        <span class="text-black pb-2 font-space-grotesk font-semibold">The</span>
+                        <span class="text-black font-space-grotesk font-semibold">Framework</span>
+                    </h1>
+                </div>
+
+                <!-- The Glass Sphere -->
+                <div class="glass-orb hero-3d-text"
+                    style="--cursor-x: 40.00000000000003px; --cursor-y: -191.69999694824207px; --diameter: 280px;">
+                </div>
+
+            </div>
+
+            <!-- Supporting Text -->
+            <div class="mt-12 pl-2">
+                <p
+                    class="text-xl md:text-2xl text-zinc-600 tracking-tight max-w-xl leading-relaxed pointer-events-none hero-3d-text font-space-grotesk font-semibold">
+                    Exploring the edges of visual clarity.<br>
+                    Where new ideas take form in quiet precision.
+                </p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Bottom Ticker / Marquee -->
+    <div class="absolute bottom-[5%] left-0 w-full z-30 overflow-visible pointer-events-auto">
+
+        <!-- Slanted Container -->
+        <div
+            class="relative w-[110%] -left-[5%] bg-white border-y border-pink-200 shadow-[0_-20px_60px_-15px_rgba(190,24,93,0.4)] transform -rotate-1 py-5 flex items-center overflow-hidden">
+
+
+
+            <!-- Moving Content -->
+            <div class="flex items-center whitespace-nowrap animate-marquee">
+                <!-- Set 1 -->
+                <div class="flex items-center gap-16 px-8">
+                    <span class="text-xl text-zinc-800 font-medium tracking-tight flex items-center gap-3 font-geist">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            data-lucide="scan-line" class="lucide lucide-scan-line w-5 h-5 text-pink-500">
+                            <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
+                            <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
+                            <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
+                            <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
+                            <path d="M7 12h10"></path>
+                        </svg>
+                        System architecture initialized.
+                    </span>
+                    <span class="h-6 w-px bg-zinc-200"></span>
+                    <span class="text-xl text-zinc-800 font-medium tracking-tight flex items-center gap-3 font-geist">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            data-lucide="network" class="lucide lucide-network w-5 h-5 text-zinc-400">
+                            <rect x="16" y="16" width="6" height="6" rx="1"></rect>
+                            <rect x="2" y="16" width="6" height="6" rx="1"></rect>
+                            <rect x="9" y="2" width="6" height="6" rx="1"></rect>
+                            <path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"></path>
+                            <path d="M12 12V8"></path>
+                        </svg>
+                        Awaiting user input.
+                    </span>
+                    <span class="h-6 w-px bg-zinc-200"></span>
+                    <div
+                        class="flex items-center gap-5 opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
+                        <span class="text-xs uppercase tracking-widest text-zinc-400 font-bold font-geist">Stack</span>
+                        <!-- Tech Logo 1 -->
+                        <svg class="h-6 w-auto text-zinc-800" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="2" y="2" width="20" height="20" rx="5"></rect>
+                            <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"></path>
+                        </svg>
+                        <!-- Tech Logo 2 -->
+                        <svg class="h-6 w-auto text-zinc-800" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Set 2 (Duplicate) -->
+                <div class="flex items-center gap-16 px-8">
+                    <span class="text-xl text-zinc-800 font-medium tracking-tight flex items-center gap-3 font-geist">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            data-lucide="scan-line" class="lucide lucide-scan-line w-5 h-5 text-pink-500">
+                            <path d="M3 7V5a2 2 0 0 1 2-2h2"></path>
+                            <path d="M17 3h2a2 2 0 0 1 2 2v2"></path>
+                            <path d="M21 17v2a2 2 0 0 1-2 2h-2"></path>
+                            <path d="M7 21H5a2 2 0 0 1-2-2v-2"></path>
+                            <path d="M7 12h10"></path>
+                        </svg>
+                        System architecture initialized.
+                    </span>
+                    <span class="h-6 w-px bg-zinc-200"></span>
+                    <span class="text-xl text-zinc-800 font-medium tracking-tight flex items-center gap-3 font-geist">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            data-lucide="network" class="lucide lucide-network w-5 h-5 text-zinc-400">
+                            <rect x="16" y="16" width="6" height="6" rx="1"></rect>
+                            <rect x="2" y="16" width="6" height="6" rx="1"></rect>
+                            <rect x="9" y="2" width="6" height="6" rx="1"></rect>
+                            <path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"></path>
+                            <path d="M12 12V8"></path>
+                        </svg>
+                        Awaiting user input.
+                    </span>
+                    <span class="h-6 w-px bg-zinc-200"></span>
+                    <div
+                        class="flex items-center gap-5 opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
+                        <span class="text-xs uppercase tracking-widest text-zinc-400 font-bold font-geist">Stack</span>
+                        <!-- Tech Logo 1 -->
+                        <svg class="h-6 w-auto text-zinc-800" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="2" y="2" width="20" height="20" rx="5"></rect>
+                            <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"></path>
+                        </svg>
+                        <!-- Tech Logo 2 -->
+                        <svg class="h-6 w-auto text-zinc-800" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // Elements
+        const textContainer = document.getElementById('hero-text-container');
+        const lensLayer = document.querySelector('.lens-content-layer');
+        const glassOrb = document.querySelector('.glass-orb');
+        const gridLayer = document.getElementById('grid-layer');
+
+        // Configuration
+        const lerpFactor = 0.12;
+        const orbDiameter = 280; // Increased size slightly for impact
+
+        // State
+        let mouseX = window.innerWidth / 2;
+        let mouseY = window.innerHeight / 2;
+
+        // For Lens Local Coordinates
+        let localMouseX = 0;
+        let localMouseY = 0;
+        let currentLocalX = 0;
+        let currentLocalY = 0;
+
+        // For Global 3D Tilt
+        let tiltX = 0;
+        let tiltY = 0;
+        let currentTiltX = 0;
+        let currentTiltY = 0;
+
+        // For Text Movement Smoothing
+        let currentTextMoveX = 0;
+        let currentTextMoveY = 0;
+
+        // Mouse Move Listener (Global)
+        window.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+
+            // Calculate Local Coords for Lens if hovering text
+            const rect = textContainer.getBoundingClientRect();
+            localMouseX = mouseX - rect.left;
+            localMouseY = mouseY - rect.top;
+
+            // Check if mouse is within a reasonable distance of the text to show the orb
+            // Expanded buffer to make it feel more responsive around the text
+            const buffer = 100;
+            if (
+                mouseX > rect.left - buffer &&
+                mouseX < rect.right + buffer &&
+                mouseY > rect.top - buffer &&
+                mouseY < rect.bottom + buffer
+            ) {
+                textContainer.classList.add('active');
+            } else {
+                textContainer.classList.remove('active');
+            }
+        });
+
+        function animate() {
+            // 1. Smooth Lens Movement (Lerp)
+            currentLocalX += (localMouseX - currentLocalX) * lerpFactor;
+            currentLocalY += (localMouseY - currentLocalY) * lerpFactor;
+
+            // Apply Lens Position
+            // If active, radius is full, else 0
+            const radius = textContainer.classList.contains('active') ? orbDiameter / 2 : 0;
+
+            // CSS Variable injection for the clip-path
+            lensLayer.style.setProperty('--cursor-x', `${currentLocalX}px`);
+            lensLayer.style.setProperty('--cursor-y', `${currentLocalY}px`);
+            lensLayer.style.setProperty('--radius', `${radius}px`);
+
+            // CSS Variable for the glass orb div
+            glassOrb.style.setProperty('--cursor-x', `${currentLocalX}px`);
+            glassOrb.style.setProperty('--cursor-y', `${currentLocalY}px`);
+            glassOrb.style.setProperty('--diameter', `${orbDiameter}px`);
+
+            // 2. 3D Parallax Background Calculation
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+
+            const pctX = (mouseX - centerX) / centerX;
+            const pctY = (mouseY - centerY) / centerY;
+
+            // Target angles
+            const targetTiltX = pctX * 8;
+            const targetTiltY = pctY * -8;
+
+            // Smooth Tilt
+            currentTiltX += (targetTiltX - currentTiltX) * 0.05;
+            currentTiltY += (targetTiltY - currentTiltY) * 0.05;
+
+            // Apply to Grid (Background)
+            gridLayer.style.setProperty('--tilt-x', `${currentTiltX}deg`);
+            gridLayer.style.setProperty('--tilt-y', `${20 + currentTiltY}deg`);
+
+            // Apply slight parallax to Hero Text
+            const targetTextMoveX = pctX * -15;
+            const targetTextMoveY = pctY * -15;
+
+            // Smooth Text Movement (Lerp)
+            currentTextMoveX += (targetTextMoveX - currentTextMoveX) * 0.1;
+            currentTextMoveY += (targetTextMoveY - currentTextMoveY) * 0.1;
+
+            // Apply to Container instead of Document for better performance
+            textContainer.style.setProperty('--move-x', `${currentTextMoveX}px`);
+            textContainer.style.setProperty('--move-y', `${currentTextMoveY}px`);
+
+            requestAnimationFrame(animate);
+        }
+
+        // Initialize animation
+        animate();
+
+        // GSAP Animations
+        document.addEventListener("DOMContentLoaded", (event) => {
+            gsap.registerPlugin();
+
+            const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+
+            // 1. Grid Fade In
+            tl.from(".grid-layer", {
+                duration: 1.5,
+                opacity: 0,
+                scale: 1.2,
+                ease: "power2.out"
+            }, 0);
+
+            // 2. Header Slide Down
+            tl.from("header", {
+                duration: 1,
+                y: -30,
+                opacity: 0,
+                delay: 0.2
+            }, 0);
+
+            // 3. Hero Text Stagger
+            // Split text manually for stagger effect since we don't have SplitText plugin
+            const heroSpans = document.querySelectorAll("#hero-text-container h1 > span");
+            tl.from(heroSpans, {
+                duration: 1.2,
+                y: 100,
+                opacity: 0,
+                stagger: 0.15,
+                skewY: 5
+            }, 0.3);
+
+            // 4. Supporting Text Fade Up
+            tl.from(".mt-12 p", {
+                duration: 1,
+                y: 20,
+                opacity: 0
+            }, 0.8);
+
+            // 5. Bottom Ticker Slide Up
+            tl.from(".absolute.bottom-\\[5\\%\\]", {
+                duration: 1,
+                y: 50,
+                opacity: 0
+            }, 1);
+        });
+
+    </script>
+
+
+</body>
+
+</html>
