@@ -16,7 +16,8 @@ export default function HeroSection() {
   
   // Array Refs
   const navItemsRef = useRef([]);
-  const linesRef = useRef([]);
+  const leftTextRef = useRef([]);  // Left side text
+  const rightTextRef = useRef([]); // Right side text
   const iconsRef = useRef([]);
   const floatersRef = useRef([]);
   const mobileLinksRef = useRef([]);
@@ -26,34 +27,56 @@ export default function HeroSection() {
     let ctx = gsap.context(() => {
       const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
-      // Navbar
-      tl.from(logoRef.current, { y: -20, opacity: 0, duration: 1 })
-        .from(navItemsRef.current, { y: -20, opacity: 0, duration: 0.8, stagger: 0.1 }, "-=0.8");
-
-      // Hero Text Lines
-      tl.from(linesRef.current, { 
-        y: 50, opacity: 0, duration: 1.2, stagger: 0.15, clearProps: "all" 
+      // 1. Navbar + Top Elements (Fade + Slide Up)
+      tl.from(logoRef.current, { 
+        y: 20, opacity: 0, duration: 0.6 
+      })
+      .from(navItemsRef.current, { 
+        y: 20, opacity: 0, duration: 0.6, stagger: 0.1 
+      }, "-=0.4")
+      .from(hamburgerRef.current, {
+        y: 20, opacity: 0, duration: 0.6
       }, "-=0.6");
 
-      // Icons
+      // 2. Split Text Animation (Coming out from Logo)
+      // Left text moves from Right (100%) to Left (0%)
+      tl.from(leftTextRef.current, {
+        x: "100%",
+        opacity: 0,
+        duration: 1.2,
+        stagger: 0.15,
+        ease: "power3.out"
+      }, "-=0.2");
+
+      // Right text moves from Left (-100%) to Right (0%)
+      tl.from(rightTextRef.current, {
+        x: "-100%",
+        opacity: 0,
+        duration: 1.2,
+        stagger: 0.15,
+        ease: "power3.out"
+      }, "<"); // Run at same time as left text
+
+      // 3. Icons (Pop in with the text)
       tl.from(iconsRef.current, { 
         scale: 0, rotation: -180, duration: 0.8, stagger: 0.1, ease: "back.out(1.7)" 
       }, "-=1.0");
 
-      // CTA Button
-      tl.from(ctaRef.current, { 
-        scale: 0.5, opacity: 0, duration: 0.8, ease: "back.out(1.7)", clearProps: "scale,opacity" 
-      }, "-=0.8");
-
+      // 4. Subtext + Buttons Fade/Slide
       // Floating Labels
       tl.from(floatersRef.current, { 
-        opacity: 0, y: 20, duration: 1, stagger: 0.1 
+        y: 10, opacity: 0, duration: 0.8, stagger: 0.1 
       }, "-=0.5");
+
+      // CTA Button
+      tl.from(ctaRef.current, { 
+        y: 10, opacity: 0, duration: 0.8, clearProps: "all" 
+      }, "-=0.6");
 
       // Bottom Bar
       tl.from(bottomBarRef.current, { 
         scaleY: 0, transformOrigin: "bottom", duration: 1 
-      }, "-=1.0");
+      }, "-=0.8");
 
     }, containerRef);
 
@@ -67,10 +90,6 @@ export default function HeroSection() {
 
     const burgerSpans = hamburgerRef.current.children;
     const links = mobileLinksRef.current;
-
-    // NOTE: We do NOT use ctx.revert() here on cleanup. 
-    // Reverting would snap the elements back to original CSS instantly, killing the exit animation.
-    // Instead, we simply animate TO the new state. GSAP handles the overwrites.
 
     if (isMenuOpen) {
       // --- OPEN STATE ---
@@ -132,7 +151,7 @@ export default function HeroSection() {
   };
 
   return (
-    <div ref={containerRef} className="bg-[#e3e3e3] font-['Inter'] w-full min-h-screen flex flex-col overflow-x-hidden">
+    <div ref={containerRef} className="bg-[#d8d9d8] font-['Host_Grotesk'] w-full min-h-screen flex flex-col overflow-x-hidden text-[#333]">
       
       {/* --- Navigation --- */}
       <nav className="flex justify-between items-center px-6 py-6 md:px-12 md:py-6 uppercase font-semibold text-sm text-[#333] relative z-50">
@@ -169,10 +188,8 @@ export default function HeroSection() {
       {/* --- Mobile Menu Overlay --- */}
       <div 
         ref={mobileMenuRef}
-        className="fixed top-0 left-0 w-full h-screen bg-[#e3e3e3] flex flex-col justify-center items-center gap-8 z-40 opacity-0 pointer-events-none"
+        className="fixed top-0 left-0 w-full h-screen bg-[#d8d9d8] flex flex-col justify-center items-center gap-8 z-40 opacity-0 pointer-events-none"
       >
-        {/* REMOVED THE <BUTTON>CLOSE</BUTTON> HERE TO FIX OVERLAP */}
-
         {['Services', 'Our Work', 'Contact'].map((item, i) => (
           <a
             key={item}
@@ -190,41 +207,53 @@ export default function HeroSection() {
       <main className="relative flex-grow flex flex-col justify-center items-center p-4 md:p-8 w-full">
         
         {/* Floating Labels */}
-        <div ref={el => addRef(el, floatersRef, 0)} className="hidden md:block absolute top-[45%] left-[8%] text-right text-xs font-bold text-gray-400 leading-tight uppercase">
+        <div ref={el => addRef(el, floatersRef, 0)} className="hidden md:block absolute top-[45%] left-[8%] text-right text-xs font-['Host_Grotesk'] font-bold text-gray-400 leading-tight uppercase z-30">
           Web & App<br/>Development
         </div>
-        <div ref={el => addRef(el, floatersRef, 1)} className="hidden md:block absolute top-[60%] left-[10%] text-right text-xs font-bold text-gray-400 leading-tight uppercase">
+        <div ref={el => addRef(el, floatersRef, 1)} className="hidden md:block absolute top-[60%] left-[10%] text-right text-xs font-['Host_Grotesk'] font-bold text-gray-400 leading-tight uppercase z-30">
           System<br/>Integration<br/>& Cloud
         </div>
-        <div ref={el => addRef(el, floatersRef, 2)} className="hidden md:block absolute top-[10%] right-[5%] text-right text-xs font-bold text-gray-400 leading-tight uppercase">
+        <div ref={el => addRef(el, floatersRef, 2)} className="hidden md:block absolute top-[10%] right-[5%] text-right text-xs font-['Host_Grotesk'] font-bold text-gray-400 leading-tight uppercase z-30">
           Custom AI Solutions<br/>& Integration
         </div>
-        <div ref={el => addRef(el, floatersRef, 3)} className="hidden md:block absolute bottom-[10%] right-[15%] text-left text-xs font-bold text-gray-400 leading-tight uppercase">
+        <div ref={el => addRef(el, floatersRef, 3)} className="hidden md:block absolute bottom-[10%] right-[15%] text-left text-xs font-['Host_Grotesk'] font-bold text-gray-400 leading-tight uppercase z-30">
           Maintenance<br/>& Security
         </div>
 
         {/* Headline Wrapper */}
-        <div className="flex flex-col items-center w-full max-w-[1600px]">
+        <div className="flex flex-col items-center w-full max-w-[1600px] gap-2 md:gap-4">
           
           {/* Row 1 */}
-          <div ref={el => addRef(el, linesRef, 0)} className="flex items-center justify-center font-['Anton'] text-[16vw] md:text-[13.5vw] leading-[0.9] md:leading-[0.85] tracking-tight uppercase whitespace-nowrap w-full flex-wrap md:flex-nowrap mb-2 md:mb-0">
-            <span className="text-white">TRANS</span>
+          <div className="flex items-center justify-center font-['Oswald'] font-bold text-[14vw] md:text-[11.5vw] leading-[0.9] md:leading-[0.85] tracking-tight uppercase whitespace-nowrap w-full flex-wrap md:flex-nowrap mb-2 md:mb-0">
             
-            <div ref={el => addRef(el, iconsRef, 0)} className="inline-flex justify-center items-center h-[0.8em] w-[0.8em] mx-[0.05em] bg-[#edff67] text-white">
-               <svg className="w-[80%] h-[80%] fill-white" viewBox="0 0 24 24">
+            {/* Left Text Mask */}
+            <div className="overflow-hidden flex justify-end">
+              <span ref={el => addRef(el, leftTextRef, 0)} className="text-[#fefeff] block">TRANS</span>
+            </div>
+            
+            {/* Icon */}
+            <div ref={el => addRef(el, iconsRef, 0)} className="inline-flex justify-center items-center h-[0.8em] w-[0.8em] mx-[0.05em] bg-[#eefe84] text-black z-10 relative">
+               <svg className="w-[80%] h-[80%] fill-black" viewBox="0 0 24 24">
                   <path d="M12 2L14.5 9.5H22L16 14L18.5 21.5L12 17L5.5 21.5L8 14L2 9.5H9.5L12 2Z"/>
                </svg>
             </div>
             
-            <span className="text-white">FORMING</span>
+            {/* Right Text Mask */}
+            <div className="overflow-hidden flex justify-start">
+              <span ref={el => addRef(el, rightTextRef, 0)} className="text-[#fefeff] block">FORMING</span>
+            </div>
           </div>
 
           {/* Row 2 */}
-          <div ref={el => addRef(el, linesRef, 1)} className="relative flex items-center justify-center font-['Anton'] text-[16vw] md:text-[13.5vw] leading-[0.9] md:leading-[0.85] tracking-tight uppercase whitespace-nowrap w-full flex-wrap md:flex-nowrap mb-2 md:mb-0">
+          <div className="relative flex items-center justify-center font-['Oswald'] font-bold text-[14vw] md:text-[11.5vw] leading-[0.9] md:leading-[0.85] tracking-tight uppercase whitespace-nowrap w-full flex-wrap md:flex-nowrap mb-2 md:mb-0">
             
-            <span className="text-white">IDEAS</span>
+            {/* Left Text Mask */}
+            <div className="overflow-hidden flex justify-end">
+              <span ref={el => addRef(el, leftTextRef, 1)} className="text-[#fefeff] block">IDEAS</span>
+            </div>
             
-            <div ref={el => addRef(el, iconsRef, 1)} className="inline-flex justify-center items-center h-[0.8em] w-[0.85em] mx-[0.05em]">
+            {/* Icon */}
+            <div ref={el => addRef(el, iconsRef, 1)} className="inline-flex justify-center items-center h-[0.8em] w-[0.85em] mx-[0.05em] z-10 relative">
                <svg className="w-full h-full fill-black" viewBox="0 0 100 100">
                   <circle cx="25" cy="25" r="22" />
                   <circle cx="75" cy="25" r="22" />
@@ -233,13 +262,16 @@ export default function HeroSection() {
                </svg>
             </div>
             
-            <span className="text-white">INTO</span>
+            {/* Right Text Mask */}
+            <div className="overflow-hidden flex justify-start">
+              <span ref={el => addRef(el, rightTextRef, 1)} className="text-[#fefeff] block">INTO</span>
+            </div>
 
-            {/* CTA Button */}
+            {/* CTA Button - UPDATED WITH ROUNDED-FULL */}
             <a 
               href="#" 
               ref={ctaRef}
-              className="md:absolute right-auto md:right-[5%] top-auto md:top-1/2 md:-translate-y-1/2 mt-4 md:mt-0 bg-black text-white no-underline px-8 py-4 rounded-full font-['Inter'] text-sm md:text-base font-medium tracking-normal flex items-center gap-2 hover:bg-[#333] hover:scale-105 hover:shadow-xl transition-all duration-300 group z-10 whitespace-nowrap"
+              className="md:absolute right-auto md:right-[2%] top-auto md:top-1/2 md:-translate-y-1/2 mt-4 md:mt-0 bg-black text-white no-underline px-6 py-3 md:px-10 md:py-5 rounded-full font-['Host_Grotesk'] text-xs md:text-base font-medium tracking-normal flex items-center gap-2 hover:scale-105 hover:shadow-xl transition-all duration-300 group z-20 whitespace-nowrap"
             >
               Work with us
               <svg className="w-3 h-3 transition-transform duration-300 group-hover:translate-x-[3px] group-hover:-translate-y-[3px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -250,27 +282,35 @@ export default function HeroSection() {
           </div>
 
           {/* Row 3 */}
-          <div ref={el => addRef(el, linesRef, 2)} className="flex items-center justify-center font-['Anton'] text-[16vw] md:text-[13.5vw] leading-[0.9] md:leading-[0.85] tracking-tight uppercase whitespace-nowrap w-full flex-wrap md:flex-nowrap text-[#edff67]">
-            <span>EXPERI</span>
+          <div className="flex items-center justify-center font-['Oswald'] font-bold text-[14vw] md:text-[11.5vw] leading-[0.9] md:leading-[0.85] tracking-tight uppercase whitespace-nowrap w-full flex-wrap md:flex-nowrap text-[#eefe84]">
             
+            {/* Left Text Mask */}
+            <div className="overflow-hidden flex justify-end">
+              <span ref={el => addRef(el, leftTextRef, 2)} className="block">EXPERI</span>
+            </div>
+            
+            {/* Icon */}
             <div 
               ref={el => addRef(el, iconsRef, 2)} 
-              className="inline-flex justify-center items-center h-[0.75em] w-[0.75em] mx-[0.02em] bg-black"
+              className="inline-flex justify-center items-center h-[0.75em] w-[0.75em] mx-[0.02em] bg-white z-10 relative"
               style={{ clipPath: "polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)" }}
             >
-               <svg className="w-[60%] h-[60%] -rotate-45 stroke-white fill-none" viewBox="0 0 24 24" strokeWidth="0">
-                  <path d="M5 12h14M12 5l7 7-7 7" stroke="white" strokeWidth="4" />
+               <svg className="w-[60%] h-[60%] -rotate-45 stroke-black fill-none" viewBox="0 0 24 24" strokeWidth="0">
+                  <path d="M5 12h14M12 5l7 7-7 7" stroke="black" strokeWidth="4" />
                </svg>
             </div>
             
-            <span>ENCES</span>
+            {/* Right Text Mask */}
+            <div className="overflow-hidden flex justify-start">
+              <span ref={el => addRef(el, rightTextRef, 2)} className="block">ENCES</span>
+            </div>
           </div>
 
         </div>
       </main>
 
       {/* --- Bottom Neon Bar --- */}
-      <div ref={bottomBarRef} className="h-[60px] w-full bg-[#edff67] mt-auto"></div>
+      <div ref={bottomBarRef} className="h-[60px] w-full bg-[#eefe84] mt-auto"></div>
 
     </div>
   );
