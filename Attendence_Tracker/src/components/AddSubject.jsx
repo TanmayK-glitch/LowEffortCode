@@ -19,7 +19,6 @@ function AddSubject({ onAdd }) {
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        // Basic Validation
         if (!name.trim()) {
             setError("Subject name is required");
             return;
@@ -28,13 +27,11 @@ function AddSubject({ onAdd }) {
         const att = parseInt(attended) || 0;
         const cond = parseInt(conducted) || 0;
 
-        // Logic check: Negatives
         if (att < 0 || cond < 0) {
             setError("Values cannot be negative");
             return;
         }
 
-        // Logic Check: Attended > Conducted
         if (att > cond) {
             setError("Attended classes cannot be more than conducted");
             return;
@@ -56,84 +53,86 @@ function AddSubject({ onAdd }) {
         return (
             <button
                 onClick={() => setIsOpen(true)}
-                className="w-full py-4 border-2 border-dashed border-neutral-800 rounded-2xl text-neutral-500 hover:text-emerald-400 hover:border-emerald-500/30 hover:bg-emerald-500/5 transition-all flex items-center justify-center gap-2 group"
+                className="
+                    w-full py-12 px-6 
+                    border-2 border-dashed border-neutral-700 hover:border-emerald-500/50 
+                    bg-neutral-900/30 hover:bg-neutral-900/60
+                    rounded-3xl cursor-pointer transition-all duration-300 group
+                    flex flex-col items-center justify-center gap-4
+                "
             >
-                <div className="p-2 bg-neutral-800 rounded-full group-hover:bg-emerald-500/20 transition-colors">
-                    <Plus size={20} />
+                <div className="p-4 bg-neutral-800 rounded-full group-hover:bg-neutral-700 text-neutral-400 group-hover:text-white transition-colors duration-300">
+                    <Plus size={32} />
                 </div>
-                <span className="font-medium">Add New Subject</span>
+                <div className="text-center">
+                    <h2 className="text-xl font-bold text-neutral-300 group-hover:text-white transition-colors">Add New Subject</h2>
+                    <p className="text-sm text-neutral-500 group-hover:text-neutral-400">Track a new course</p>
+                </div>
             </button>
         );
     }
 
     return (
-        <div className="bg-neutral-900 border border-white/10 rounded-2xl p-6 animate-in fade-in zoom-in-95 duration-200 relative">
-
-            {/* Error Popup / Toast */}
+        <div className="w-full bg-[#111] border border-white/10 rounded-3xl p-8 animate-in fade-in zoom-in-95 duration-300 relative overflow-hidden shadow-2xl">
+            {/* Error Toast specific to this form */}
             {error && (
-                <div className="absolute -top-16 left-0 right-0 mx-auto w-max max-w-[90%] z-50 animate-in slide-in-from-bottom-2 fade-in duration-300">
-                    <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/50 text-red-200 px-4 py-3 rounded-xl shadow-xl backdrop-blur-md">
-                        <AlertCircle size={18} className="text-red-400" />
-                        <span className="text-sm font-medium">{error}</span>
-                        <button onClick={() => setError(null)} className="ml-2 hover:bg-red-500/20 p-1 rounded-full transition-colors">
-                            <X size={14} />
-                        </button>
+                <div className="absolute top-4 left-0 right-0 mx-auto w-max max-w-[90%] z-50 animate-in slide-in-from-top-2 fade-in duration-300">
+                    <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/50 text-red-200 px-4 py-2 rounded-lg shadow-xl backdrop-blur-md">
+                        <AlertCircle size={16} className="text-red-400" />
+                        <span className="text-xs font-bold uppercase tracking-wide">{error}</span>
                     </div>
                 </div>
             )}
 
-            <h3 className="text-lg font-bold text-white mb-4">New Subject</h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-bold text-white">New Subject</h3>
+                <button onClick={() => setIsOpen(false)} className="text-neutral-500 hover:text-white transition-colors">
+                    <X size={24} />
+                </button>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                    <label className="block text-xs text-neutral-400 mb-1 uppercase tracking-wider">Subject Name</label>
+                    <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase tracking-wider">Subject Name</label>
                     <input
                         type="text"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        placeholder="e.g. Data Structures"
-                        className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all placeholder:text-neutral-700"
+                        placeholder="e.g. Computer Networks"
+                        className="w-full bg-black/50 border border-white/10 rounded-xl px-5 py-3 text-white focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all placeholder:text-neutral-700 text-lg"
                         autoFocus
                     />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-6">
                     <div>
-                        <label className="block text-xs text-neutral-400 mb-1 uppercase tracking-wider">Attended</label>
+                        <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase tracking-wider">Attended</label>
                         <input
                             type="number"
                             min="0"
                             value={attended}
                             onChange={(e) => setAttended(e.target.value)}
                             placeholder="0"
-                            className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all placeholder:text-neutral-700"
+                            className="w-full bg-black/50 border border-white/10 rounded-xl px-5 py-3 text-white focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all placeholder:text-neutral-700 text-lg"
                         />
                     </div>
                     <div>
-                        <label className="block text-xs text-neutral-400 mb-1 uppercase tracking-wider">Conducted</label>
+                        <label className="block text-xs font-bold text-neutral-500 mb-2 uppercase tracking-wider">Conducted</label>
                         <input
                             type="number"
                             min="0"
                             value={conducted}
                             onChange={(e) => setConducted(e.target.value)}
                             placeholder="0"
-                            className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all placeholder:text-neutral-700"
+                            className="w-full bg-black/50 border border-white/10 rounded-xl px-5 py-3 text-white focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all placeholder:text-neutral-700 text-lg"
                         />
                     </div>
                 </div>
-                <div className="flex gap-3 pt-2">
-                    <button
-                        type="button"
-                        onClick={() => { setIsOpen(false); setError(null); }}
-                        className="flex-1 py-2 px-4 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 rounded-lg transition-colors font-medium text-sm"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="submit"
-                        className="flex-1 py-2 px-4 bg-emerald-500 hover:bg-emerald-600 text-black rounded-lg transition-colors font-bold text-sm"
-                    >
-                        Add Subject
-                    </button>
-                </div>
+                <button
+                    type="submit"
+                    className="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-black rounded-xl transition-all font-bold text-lg shadow-lg hover:shadow-emerald-500/20 active:scale-[0.99] mt-2"
+                >
+                    Create Subject
+                </button>
             </form>
         </div>
     );
