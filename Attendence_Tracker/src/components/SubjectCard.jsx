@@ -16,7 +16,7 @@ function SubjectCard({ subject, onUpdate, onDelete }) {
     };
 
     return (
-        <div className="relative group bg-neutral-900 border border-white/5 rounded-2xl p-6 hover:border-white/10 transition-all duration-300 shadow-xl shadow-black/20 hover:shadow-emerald-500/5">
+        <div className="relative group bg-neutral-900 border border-white/5 rounded-2xl p-6 shadow-xl shadow-black/20">
             <div className="flex justify-between items-start mb-4">
                 <h3 className="text-xl font-bold text-white tracking-wide">{name}</h3>
                 <div className={`px-3 py-1 rounded-full text-xs font-medium border ${colorClass}`}>
@@ -42,22 +42,22 @@ function SubjectCard({ subject, onUpdate, onDelete }) {
             <div className="grid grid-cols-2 gap-3 mb-4">
                 <button
                     onClick={handleAttend}
-                    className="flex items-center justify-center gap-2 py-2 px-4 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-lg transition-colors border border-emerald-500/20"
+                    className="flex items-center justify-center gap-2 py-2 px-4 bg-emerald-500/10 text-emerald-400 rounded-lg border border-emerald-500/20"
                 >
                     <Plus size={16} /> Present
                 </button>
                 <button
                     onClick={handleBunk}
-                    className="flex items-center justify-center gap-2 py-2 px-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-colors border border-red-500/20"
+                    className="flex items-center justify-center gap-2 py-2 px-4 bg-red-500/10 text-red-400 rounded-lg border border-red-500/20"
                 >
                     <Minus size={16} /> Absent
                 </button>
             </div>
 
-            <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+            <div className="absolute top-4 right-4 flex gap-2">
                 <button
                     onClick={() => onDelete(id)}
-                    className="p-1.5 text-neutral-500 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors"
+                    className="p-1.5 text-neutral-500 rounded-md"
                 >
                     <Trash2 size={14} />
                 </button>

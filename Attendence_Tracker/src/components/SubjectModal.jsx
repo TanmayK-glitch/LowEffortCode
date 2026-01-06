@@ -10,7 +10,7 @@ function SubjectModal({ subject, isOpen, onClose, onUpdate, onDelete }) {
     const status = calculateSafeBunk(attended, conducted);
     const colorClass = getStatusColor(percentage);
 
-    // Close on escape key
+
     useEffect(() => {
         const handleEsc = (e) => {
             if (e.key === 'Escape') onClose();
@@ -29,29 +29,29 @@ function SubjectModal({ subject, isOpen, onClose, onUpdate, onDelete }) {
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            {/* Backdrop */}
+
             <div
                 className="absolute inset-0 bg-black/60 backdrop-blur-md transition-opacity"
                 onClick={onClose}
             />
 
-            {/* Modal Content */}
+
             <div className="relative w-full max-w-md bg-[#111] border border-white/10 rounded-2xl p-6 animate-in zoom-in-95 duration-200">
 
-                {/* Close Button */}
+
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 text-neutral-500 hover:text-white transition-colors"
+                    className="absolute top-4 right-4 text-neutral-500"
                 >
                     <X size={20} />
                 </button>
 
-                {/* Header */}
+
                 <div className="flex justify-between items-start mb-6 pr-8">
                     <h3 className="text-2xl font-bold text-white tracking-wide">{name}</h3>
                 </div>
 
-                {/* Stats */}
+
                 <div className="mb-8 space-y-4">
                     <div className="flex justify-between items-center bg-neutral-900/50 p-4 rounded-xl border border-white/5">
                         <span className="text-neutral-400 text-sm">Attendance</span>
@@ -77,29 +77,29 @@ function SubjectModal({ subject, isOpen, onClose, onUpdate, onDelete }) {
                     </div>
                 </div>
 
-                {/* Controls */}
+
                 <div className="grid grid-cols-2 gap-4 mb-6">
                     <button
                         onClick={handleAttend}
-                        className="flex flex-col items-center justify-center gap-2 py-4 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-xl transition-all border border-emerald-500/20 hover:scale-[1.02] active:scale-[0.98]"
+                        className="flex flex-col items-center justify-center gap-2 py-4 bg-emerald-500/10 text-emerald-400 rounded-xl transition-all border border-emerald-500/20 active:scale-[0.98]"
                     >
                         <Plus size={24} />
                         <span className="font-semibold">Present</span>
                     </button>
                     <button
                         onClick={handleBunk}
-                        className="flex flex-col items-center justify-center gap-2 py-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl transition-all border border-red-500/20 hover:scale-[1.02] active:scale-[0.98]"
+                        className="flex flex-col items-center justify-center gap-2 py-4 bg-red-500/10 text-red-400 rounded-xl transition-all border border-red-500/20 active:scale-[0.98]"
                     >
                         <Minus size={24} />
                         <span className="font-semibold">Absent</span>
                     </button>
                 </div>
 
-                {/* Delete */}
+
                 <div className="flex justify-center border-t border-white/5 pt-4">
                     <button
                         onClick={() => { onDelete(id); onClose(); }}
-                        className="flex items-center gap-2 text-neutral-500 hover:text-red-400 transition-colors text-sm px-4 py-2 hover:bg-red-500/5 rounded-lg"
+                        className="flex items-center gap-2 text-neutral-500 text-sm px-4 py-2 rounded-lg"
                     >
                         <Trash2 size={16} />
                         Delete Subject

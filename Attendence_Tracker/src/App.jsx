@@ -6,7 +6,7 @@ import SubjectCapsule from './components/SubjectCapsule';
 import SubjectModal from './components/SubjectModal';
 import './index.css';
 
-// Simple UUID generator
+
 const generateId = () => Date.now().toString(36) + Math.random().toString(36).substr(2);
 
 function App() {
@@ -23,7 +23,7 @@ function App() {
   const updateSubject = (id, updatedSubject) => {
     const newSubjects = subjects.map(sub => sub.id === id ? updatedSubject : sub);
     setSubjects(newSubjects);
-    // Also update the selected subject if it's the one being modified
+
     if (selectedSubject && selectedSubject.id === id) {
       setSelectedSubject(updatedSubject);
     }
@@ -42,14 +42,14 @@ function App() {
     <div className="min-h-screen bg-[#0A0A0A] text-white font-sans selection:bg-emerald-500/30 pb-20">
       <Navbar />
 
-      <main className="max-w-4xl mx-auto px-6 pt-24 flex flex-col items-center">
+      <main className="max-w-7xl mx-auto px-6 pt-24 flex flex-col items-center">
 
-        {/* HERO SECTION: Add New Subject */}
-        <div className="w-full max-w-2xl mb-12">
+
+        <div className="w-full max-w-4xl mb-12">
           <AddSubject onAdd={addSubject} />
         </div>
 
-        {/* CAPSULE GRID */}
+
         {subjects.length > 0 && (
           <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex flex-wrap justify-center gap-4">
@@ -66,7 +66,7 @@ function App() {
 
       </main>
 
-      {/* DETAIL MODAL */}
+
       <SubjectModal
         subject={selectedSubject}
         isOpen={!!selectedSubject}
@@ -75,9 +75,9 @@ function App() {
         onDelete={deleteSubject}
       />
 
-      {/* FOOTER */}
+
       <footer className="fixed bottom-0 left-0 right-0 py-4 text-center bg-[#0A0A0A]/80 backdrop-blur-sm border-t border-white/5 text-neutral-600 text-xs z-40">
-        <p>Designed and Developed by <a href="https://github.com/TanmayK-glitch" target="_blank" rel="noopener noreferrer">Tanmay</a></p>
+        <p className='text-sm'>Designed and Developed by <a href="https://github.com/TanmayK-glitch" target="_blank" rel="noopener noreferrer" className='text-2xl font-bold text-emerald-500'>Tanmay</a></p>
       </footer>
     </div>
   )
