@@ -9,7 +9,7 @@ function App() {
   useLayoutEffect(() => {
     let ctx = gsap.context(() => {
       const tl = gsap.timeline();
-      
+
       // Squiggles
       tl.from(".squiggle-item", {
         opacity: 0,
@@ -18,34 +18,34 @@ function App() {
         stagger: 0.1,
         ease: "back.out(1.7)"
       })
-      
-      // Capsule
-      .from(".hero-capsule", {
-        y: -20,
-        opacity: 0,
-        duration: 0.6,
-        ease: "power2.out"
-      }, "-=0.5")
-      
-      // Headline
-      .from(".hero-headline", {
-        y: 30,
-        opacity: 0,
-        duration: 0.8,
-        ease: "power3.out"
-      }, "-=0.4")
-      
-      // Buttons
-      .from(".hero-btn", {
-        y: 20,
-        opacity: 0,
-        duration: 0.6,
-        stagger: 0.1,
-        ease: "power2.out"
-      }, "-=0.6");
+
+        // Capsule
+        .from(".hero-capsule", {
+          y: -20,
+          opacity: 0,
+          duration: 0.6,
+          ease: "power2.out"
+        }, "-=0.5")
+
+        // Headline
+        .from(".hero-headline", {
+          y: 30,
+          opacity: 0,
+          duration: 0.8,
+          ease: "power3.out"
+        }, "-=0.4")
+
+        // Buttons
+        .from(".hero-btn", {
+          y: 20,
+          opacity: 0,
+          duration: 0.6,
+          stagger: 0.1,
+          ease: "power2.out"
+        }, "-=0.6");
 
     }, comp);
-    
+
     return () => ctx.revert();
   }, []);
 
@@ -55,7 +55,7 @@ function App() {
   // const photoLeftTop = "/images/photo-left-top.jpg";
   // const photoLeftBottom = "/images/photo-left-bottom.jpg";
   // const photoRight = "/images/photo-right.jpg";
-  
+
   const heroTop = "https://placehold.co/400x300/e2d5c5/4b2e26?text=Hero+Top";
   const photoLeftTop = "https://placehold.co/400x500/d4c5b5/4b2e26?text=Left+Top";
   const photoLeftBottom = "https://placehold.co/400x500/c5b5a5/4b2e26?text=Left+Bottom";
@@ -76,7 +76,7 @@ function App() {
       {/* Navbar */}
       <nav className="max-w-7xl mx-auto px-6 py-6 flex justify-between items-center">
         <div className="text-3xl font-bold tracking-tighter">strangr</div>
-        
+
         {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-10 text-sm font-medium">
           <a href="#" className="relative text-brand-brown">
@@ -90,7 +90,7 @@ function App() {
         </div>
 
         {/* Mobile Menu Button */}
-        <button 
+        <button
           className="md:hidden text-brand-brown"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
         >
@@ -115,7 +115,7 @@ function App() {
 
       {/* Main Hero Section */}
       <main className="relative max-w-[1200px] mx-auto px-4 flex flex-col justify-center items-center min-h-[calc(100vh-180px)] py-12">
-        
+
         {/* Decorative Squiggles */}
         <div className="squiggle-item absolute top-10 left-10 hidden md:block">
           <Squiggle color="#f36f36" rotation={-15} />
@@ -129,7 +129,7 @@ function App() {
         <div className="squiggle-item absolute bottom-20 right-10 hidden md:block">
           <Squiggle color="#4b2e26" rotation={-10} />
         </div>
-        
+
         {/* New Squiggles */}
         <div className="squiggle-item absolute top-32 left-[15%] opacity-60">
           <Squiggle color="#92a36f" rotation={120} />
@@ -153,7 +153,7 @@ function App() {
 
         {/* Center Content */}
         <div className="relative z-20 max-w-2xl mx-auto text-center flex flex-col items-center">
-          
+
           {/* Hero Top Image - Removed */}
 
           {/* Capsule */}
@@ -172,14 +172,14 @@ function App() {
 
           {/* Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 items-center mt-4">
-            <a 
-              href="#" 
+            <a
+              href="#"
               className="hero-btn px-8 py-3 bg-brand-orange text-white font-semibold rounded-full hover:bg-[#e06531] transition-all shadow-sm hover:shadow-md"
             >
               Try Strangr
             </a>
-            <a 
-              href="#" 
+            <a
+              href="#"
               className="hero-btn group flex items-center gap-2 px-6 py-3 text-brand-brown font-medium hover:text-brand-orange transition-colors"
             >
               Learn More
