@@ -34,7 +34,7 @@ export default function HeroSection() {
 
           {/* Pixel Headline */}
           <div className="space-y-2">
-            <h1 className="text-6xl md:text-8xl font-sans font-bold text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60 tracking-tighter leading-[0.9] drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">
+            <h1 className="text-6xl md:text-8xl font-sans font-semibold text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60 tracking-tighter leading-[0.9] drop-shadow-[0_0_10px_rgba(255,255,255,0.1)]">
               DIGITAL<br />
               <span className="text-white/90" style={{ textShadow: '4px 0 #ff6b6b, -4px 0 #00ffff' }}>SENSES</span>
             </h1>
